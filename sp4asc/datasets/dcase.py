@@ -53,7 +53,7 @@ class DCaseDataset(Dataset):
             csv_path = root_dir + "/evaluation_setup/fold1_evaluate.csv"
             meta_path = root_dir + "/meta.csv"
         elif split == "test":
-            csv_path = root_dir + "/evaluation_setup/fold1_test.csv"
+            csv_path = root_dir + "/fold1_test.csv"
             meta_path = None
         else:
             raise ValueError("Split not implemented")
