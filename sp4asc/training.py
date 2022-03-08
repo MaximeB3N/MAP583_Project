@@ -34,11 +34,12 @@ class MixUp:
         self.training = False
         return self
 
-    def __call__(self, input, target):
+    def __call__(self, input, target, one_hot):
         if self.training is None:
             raise ValueError("Choose training or testing mode")
         # Transform to one hot vector
-        target = F.one_hot(target, num_classes=self.nb_classes)
+        if one_hot:
+            target = F.one_hot(target, num_classes=self.nb_classes)
         # Mix signals
         if self.beta is not None and self.training:
             ind = torch.randperm(input.shape[0])
@@ -62,6 +63,7 @@ class TrainingManager:
         config,
         path_to_ckpt,
         nb_classes=10,
+        one_hot=True
     ):
 
         # Optim. methods
@@ -81,6 +83,8 @@ class TrainingManager:
         # Mixup and loss
         self.loss = CELoss(nb_classes=nb_classes)
         self.mixup = MixUp(alpha=config["mixup_alpha"], nb_classes=nb_classes)
+        
+        self.one_hot = one_hot
 
         # Checkpoints
         self.config = config
@@ -135,7 +139,7 @@ class TrainingManager:
             # Get network outputs with mixup during training
             with torch.no_grad():
                 sound = self.spectrogram(sound)
-                sound, gt_class = self.mixup(sound, gt_class)
+                sound, gt_class = self.mixup(sound, gt_class, self.one_hot)
                 if not training:
                     pred_class = self.net(sound)
             if training:
